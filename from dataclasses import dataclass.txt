@@ -1,0 +1,19 @@
+from dataclasses import dataclass
+from typing import Optional
+
+
+@dataclass
+class Question:
+    """Represents a quiz question."""
+
+    question: str
+    answer: str
+    explanation: Optional[str] = None
+
+
+@dataclass
+class Quiz:
+    """Represents a quiz containing multiple questions."""
+
+    topic: str
+    questions: list[Question]

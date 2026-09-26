@@ -1,0 +1,213 @@
+import os
+import streamlit as st
+from dotenv import load_dotenv
+import google.generativeai as genai
+
+# Load environment variables
+load_dotenv()
+
+# Get Gemini API key
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+# Configure Gemini
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
+
+# Page configuration
+st.set_page_config(
+    page_title="EduGenie",
+    page_icon="🎓",
+    layout="wide"
+)
+
+# Title
+st.title("🎓 EduGenie")
+st.subheader("Google Gemini Powered Learning Assistant")
+
+st.write(
+    "EduGenie is an AI-powered learning assistant that helps students "
+    "understand concepts, generate summaries, create questions, and study effectively."
+)
+
+# Check API key
+if not GEMINI_API_KEY:
+    st.warning(
+        "Gemini API key is not configured. "
+        "Please add GEMINI_API_KEY to your .env file."
+    )
+    st.stop()
+
+# Gemini model
+model = genai.GenerativeModel("gemini-2.0-flash")
+
+# Sidebar
+st.sidebar.header("📚 Learning Tools")
+
+option = st.sidebar.selectbox(
+    "Choose a learning tool",
+    [
+        "Ask a Question",
+        "Explain a Topic",
+        "Summarize Text",
+        "Generate Quiz Questions"
+    ]
+)
+
+# Ask a Question
+if option == "Ask a Question":
+
+    st.header("💬 Ask EduGenie")
+
+    question = st.text_area(
+        "Enter your question:",
+        placeholder="Example: What is Artificial Intelligence?"
+    )
+
+    if st.button("Get Answer"):
+        if question.strip():
+
+            with st.spinner("EduGenie is thinking..."):
+                try:
+                    response = model.generate_content(
+                        f"Answer the following student question clearly "
+                        f"and in simple language:\n\n{question}"
+                    )
+
+                    st.success("Answer")
+                    st.write(response.text)
+
+                except Exception as e:
+                    st.error(f"Error: {e}")
+
+        else:
+            st.warning("Please enter a question.")
+
+# Explain a Topic
+elif option == "Explain a Topic":
+
+    st.header("📖 Explain a Topic")
+
+    topic = st.text_input(
+        "Enter the topic:",
+        placeholder="Example: Data Structures"
+    )
+
+    level = st.selectbox(
+        "Choose your level",
+        ["Beginner", "Intermediate", "Advanced"]
+    )
+
+    if st.button("Explain Topic"):
+
+        if topic.strip():
+
+            with st.spinner("Preparing explanation..."):
+                try:
+                    prompt = f"""
+                    Explain the topic "{topic}" to a {level} student.
+
+                    Include:
+                    1. Simple definition
+                    2. Main concepts
+                    3. Easy example
+                    4. Real-world application
+                    5. Short summary
+                    """
+
+                    response = model.generate_content(prompt)
+
+                    st.success("Topic Explanation")
+                    st.write(response.text)
+
+                except Exception as e:
+                    st.error(f"Error: {e}")
+
+        else:
+            st.warning("Please enter a topic.")
+
+# Summarize Text
+elif option == "Summarize Text":
+
+    st.header("📝 Text Summarizer")
+
+    text = st.text_area(
+        "Paste the text you want to summarize:",
+        height=250
+    )
+
+    if st.button("Summarize"):
+
+        if text.strip():
+
+            with st.spinner("Creating summary..."):
+                try:
+                    prompt = f"""
+                    Summarize the following educational text.
+                    Use simple language and include the important points.
+
+                    TEXT:
+                    {text}
+                    """
+
+                    response = model.generate_content(prompt)
+
+                    st.success("Summary")
+                    st.write(response.text)
+
+                except Exception as e:
+                    st.error(f"Error: {e}")
+
+        else:
+            st.warning("Please enter some text.")
+
+# Generate Quiz Questions
+elif option == "Generate Quiz Questions":
+
+    st.header("🧠 Quiz Generator")
+
+    topic = st.text_input(
+        "Enter quiz topic:",
+        placeholder="Example: Python Programming"
+    )
+
+    number = st.slider(
+        "Number of questions",
+        min_value=1,
+        max_value=10,
+        value=5
+    )
+
+    if st.button("Generate Quiz"):
+
+        if topic.strip():
+
+            with st.spinner("Generating quiz questions..."):
+                try:
+                    prompt = f"""
+                    Create {number} multiple-choice questions about "{topic}".
+
+                    For each question:
+                    - Give four options: A, B, C, D
+                    - Clearly indicate the correct answer
+                    - Give a short explanation
+
+                    Make the questions suitable for students.
+                    """
+
+                    response = model.generate_content(prompt)
+
+                    st.success("Quiz")
+                    st.write(response.text)
+
+                except Exception as e:
+                    st.error(f"Error: {e}")
+
+        else:
+            st.warning("Please enter a quiz topic.")
+
+# Footer
+st.markdown("---")
+
+st.caption(
+    "🎓 EduGenie | Google Gemini Powered Learning Assistant"
+)
